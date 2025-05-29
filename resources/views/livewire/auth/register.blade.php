@@ -8,11 +8,14 @@ use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
+
 new #[Layout('components.layouts.auth')] class extends Component {
     public string $name = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $phone = '';
+    public string $address = '';
 
     /**
      * Handle an incoming registration request.
@@ -23,6 +26,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -84,6 +89,24 @@ new #[Layout('components.layouts.auth')] class extends Component {
             :placeholder="__('Confirm password')"
             viewable
         />
+        <!-- Phone -->
+        <flux:input
+            wire:model="phone"
+            :label="__('Phone')"
+            type="text"
+            autocomplete="tel"
+            :placeholder="__('Phone number')"
+        />
+        <!-- Address -->
+        <flux:input
+            wire:model="address"
+            :label="__('Address')"
+            type="text"
+            autocomplete="address"
+            :placeholder="__('Street address, City, State, Zip')"
+        />
+
+
 
         <div class="flex items-center justify-end">
             <flux:button type="submit" variant="primary" class="w-full">
