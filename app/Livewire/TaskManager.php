@@ -4,41 +4,96 @@ namespace App\Livewire;
 
 use App\Models\Task;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 class TaskManager extends Component
 {
     public $title;
+    public $message;
     public $tasks;
 
-   protected $rules = [
-        'title' => 'required|string|max:255|string',
+    public $editingTaskId = null;
+    public $editingTitle = '';
+    public $editingMessage = '';
+
+    protected $rules = [
+        'title' => 'required|string|max:255',
+        'message' => 'nullable|string',
     ];
+
     public function mount()
     {
-        $this->tasks = \App\Models\Task::all();
+        $this->loadTasks();
     }
-    
+
+    public function loadTasks()
+    {
+        $this->tasks = Task::where('user_id', Auth::id())->latest()->get();
+    }
+
     public function addTask()
     {
-        
         $this->validate();
-        Task::create(['title' => $this->title, 'completed' => false]);
-        $this->tasks = Task::all();
+
+        Task::create([
+            'title' => $this->title,
+            'message' => $this->message,
+            'completed' => false,
+            'user_id' => Auth::id(),
+        ]);
+
         $this->title = '';
-        Session()->flash('message', 'Task added successfully!');
+        $this->message = '';
+        session()->flash('message', 'Task added successfully!');
+        $this->loadTasks();
+    }
+
+    public function editTask($id)
+    {
+        $task = Task::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $this->editingTaskId = $task->id;
+        $this->editingTitle = $task->title;
+        $this->editingMessage = $task->message;
+    }
+
+    public function updateTask()
+    {
+        $this->validate([
+            'editingTitle' => 'required|string|max:255',
+            'editingMessage' => 'nullable|string',
+        ]);
+
+        Task::where('id', $this->editingTaskId)
+            ->where('user_id', Auth::id())
+            ->update([
+                'title' => $this->editingTitle,
+                'message' => $this->editingMessage,
+            ]);
+
+        session()->flash('message', 'Task updated successfully!');
+        $this->cancelEdit();
+        $this->loadTasks();
+    }
+
+    public function cancelEdit()
+    {
+        $this->editingTaskId = null;
+        $this->editingTitle = '';
+        $this->editingMessage = '';
     }
 
     public function deleteTask($id)
     {
-        Task::find($id)->delete();
-        $this->tasks = Task::all();
-        Session()->flash('message', 'Task deleted successfully!');
-    
+        Task::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        session()->flash('message', 'Task deleted permanently!');
+        $this->loadTasks();
     }
-
-
-
-
 
     public function render()
     {
