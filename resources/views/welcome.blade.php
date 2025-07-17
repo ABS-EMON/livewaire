@@ -86,7 +86,7 @@
         </div>
     </div>
     <div class="carousel-item absolute inset-0 transition-opacity duration-700 ease-in-out hidden">
-        <img src="{{ asset('image/img2.jpg') }}" alt="Slide 2" class="w-full h-[600px] object-cover rounded-xl">
+        <img src="{{ asset(path: 'image/img2.jpg') }}" alt="Slide 2" class="w-full h-[600px] object-cover rounded-xl">
         <div class="absolute bottom-6 left-6 bg-black bg-opacity-50 text-white px-6 py-4 rounded-lg">
             <h5 class="text-2xl font-bold">Second Slide</h5>
             <p class="text-base">This is the second carousel slide caption.</p>
