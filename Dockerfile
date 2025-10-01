@@ -9,16 +9,24 @@ RUN npm run build
 # Stage 2: Laravel with PHP 
 FROM php:8.2-cli-alpine
 
-# Install system deps
-RUN apk add --no-cache \
-    bash \
-    git \
-    unzip \
-    libzip-dev \
-    libpng-dev \
-    oniguruma-dev \
-    sqlite \
-    && docker-php-ext-install pdo pdo_sqlite mbstring zip gd opcache
+# Install system dependencies
+RUN apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        build-base \
+        linux-headers \
+    && \
+    apk add --no-cache \
+        bash \
+        git \
+        unzip \
+        libzip-dev \
+        libpng-dev \
+        oniguruma-dev \
+        sqlite-dev \
+    && \
+    docker-php-ext-install pdo pdo_sqlite mbstring zip gd opcache \
+    && \
+    apk del .build-deps
 
 # Configure opcache for production
 RUN { \
@@ -56,8 +64,10 @@ RUN touch .env && \
     chmod 777 .env && \
     chmod -R 777 storage bootstrap/cache
 
-# Create SQLite database
-RUN touch database/database.sqlite && \
+# Create SQLite database directory first
+RUN mkdir -p database && \
+    touch database/database.sqlite && \
+    chmod -R 777 database && \
     chmod 777 database/database.sqlite
 
 # Expose Render's default port
